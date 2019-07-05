@@ -1,0 +1,32 @@
+{
+  "name": "astronomy-img",
+  "version": "1.0.0",
+  "description": "Fetch astronomy image of the day",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.12",
+    "@types/node-fetch": "^2.3.7",
+    "typescript": "^3.5.2"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "clean": "rm -rf dist && rm -f astronomy-img.jpg",
+    "build": "rm -rf dist && tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "rm -f astronomy-img.jpg && node ./dist/astronomy.js && xdg-open astronomy-img.jpg"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rconway/astronomy-img.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rconway/astronomy-img/issues"
+  },
+  "homepage": "https://github.com/rconway/astronomy-img#readme"
+}
