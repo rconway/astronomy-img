@@ -3,8 +3,9 @@ import nasa
 
 
 def main():
+    fetcher = nasa.NasaImageFetcher()
     try:
-        nasa.get_image()
+        fetcher.get_image()
     except image_fetcher.ImageFetcherError as e:
         print(f"Problem fetching image: {e}")
 
