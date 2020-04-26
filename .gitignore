@@ -60,6 +60,11 @@ typings/
 # next.js build output
 .next
 
+# python (ref. other branches)
+__pycache__/
+venv/
+
 # my stuff
+.vscode/
 dist/
 astronomy-img.jpg
