@@ -13,7 +13,11 @@ func init() {
 func main() {
 	var fetcher imagefetcher.ImageFetcher
 	fetcher = &imagefetcher.NasaImageFetcher{}
-	filename := fetcher.Fetch()
+	filename, err := fetcher.Fetch()
 
-	log.Printf("Image retrieved to filename: %v\n", filename)
+	if err == nil {
+		log.Printf("Image retrieved to filename: %v\n", filename)
+	} else {
+		log.Printf("Error fetching image: %v\n", err)
+	}
 }

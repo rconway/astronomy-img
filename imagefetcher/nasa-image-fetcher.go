@@ -12,38 +12,48 @@ import (
 	"time"
 )
 
-var nasaURL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
-
-// NasaImageFetcher Fetch images from NASA website
-type NasaImageFetcher struct{}
-
+// Module initialiser
 func init() {
 	log.Println("...nasa-image-fetcher...")
 }
 
-func (f *NasaImageFetcher) check(err error) {
-	if err != nil {
-		log.Panicln(err)
+// URL for Nasa images
+var nasaURL = "https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY"
+
+// NasaImageFetcher Fetch images from NASA website
+type NasaImageFetcher struct {
+	webClient *http.Client
+}
+
+// NasaMetadataResponse json structure for metadata response
+type NasaMetadataResponse struct {
+	URL *string `json:"url"`
+}
+
+// Instantiate (if required) and return the web client
+func (f *NasaImageFetcher) getWebClient() *http.Client {
+	if f.webClient == nil {
+		f.webClient = &http.Client{Timeout: 3 * time.Second}
 	}
+	return f.webClient
 }
 
 // get image URL by requestng json metadata from site
 func (f *NasaImageFetcher) getImageURLFromMetadata(siteURL string) (string, error) {
-	myClient := &http.Client{Timeout: 10 * time.Second}
-
 	// get metadata from server
-	resp, err := myClient.Get(siteURL)
-	f.check(err)
+	resp, err := f.getWebClient().Get(siteURL)
+	if err != nil {
+		return "", fmt.Errorf("Problem retrieving metadata: %w", err)
+	}
 	defer resp.Body.Close()
-	fmt.Println("Response status:", resp.Status)
+	log.Println("Response status:", resp.Status)
 
 	// parse the json response
-	type responseData struct {
-		URL *string `json:"url"`
-	}
-	data := &responseData{}
+	data := &NasaMetadataResponse{}
 	err = json.NewDecoder(resp.Body).Decode(data)
-	f.check(err)
+	if err != nil {
+		return "", fmt.Errorf("Problem parsing metadata: %w", err)
+	}
 
 	// error if url is missing from json response
 	if data.URL == nil {
@@ -54,17 +64,16 @@ func (f *NasaImageFetcher) getImageURLFromMetadata(siteURL string) (string, erro
 	return *data.URL, nil
 }
 
-func (f *NasaImageFetcher) getImageFromURL(url string, fileName string) error {
-	file, err := os.Create(fileName)
+func (f *NasaImageFetcher) getImageFromURL(url string, filename string) error {
+	file, err := os.Create(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("Problem creating output file '%v': %w", filename, err)
 	}
 	defer file.Close()
 
-	myClient := &http.Client{Timeout: 10 * time.Second}
-	resp, err := myClient.Get(url)
+	resp, err := f.getWebClient().Get(url)
 	if err != nil {
-		return err
+		return fmt.Errorf("Problem retrieving image from URL `%v`: %w", url, err)
 	}
 	defer resp.Body.Close()
 
@@ -79,7 +88,7 @@ func (f *NasaImageFetcher) getFilenameFromURL(fullURLFile string) (string, error
 
 	fileURL, err := url.Parse(fullURLFile)
 	if err != nil {
-		return filename, err
+		return filename, fmt.Errorf("Could not deduce filename from URL '%v': %w", fullURLFile, err)
 	}
 
 	path := fileURL.Path
@@ -90,16 +99,25 @@ func (f *NasaImageFetcher) getFilenameFromURL(fullURLFile string) (string, error
 }
 
 // Fetch Fetch the image from the provider
-func (f *NasaImageFetcher) Fetch() string {
+func (f *NasaImageFetcher) Fetch() (string, error) {
+	imageFilename := ""
+	err := error(nil)
+
 	// image URL
 	imageURLStr, err := f.getImageURLFromMetadata(nasaURL)
-	f.check(err)
-	log.Printf("Image URL is %v\n", imageURLStr)
+	if err == nil {
+		log.Printf("Image URL is %v\n", imageURLStr)
+		// image itself
+		imageFilename, err = f.getFilenameFromURL(imageURLStr)
+	}
 
-	// image itself
-	imageFilename, err := f.getFilenameFromURL(imageURLStr)
-	f.check(err)
-	f.getImageFromURL(imageURLStr, imageFilename)
+	if err == nil {
+		err = f.getImageFromURL(imageURLStr, imageFilename)
+	}
 
-	return imageFilename
+	if err != nil {
+		imageFilename = ""
+	}
+
+	return imageFilename, err
 }
