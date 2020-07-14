@@ -28,7 +28,7 @@ class NasaImageFetcher(image_fetcher.ImageFetcher):
             raise NasaMetadataError("Invalid metadata json")
         except Exception as e:
             raise NasaMetadataError(
-                f"Could not retrieve metadata due to exception: {type(e)}")
+                f"Could not retrieve metadata due to exception: {type(e)} - {e}")
 
         return json_metadata['url']
 
