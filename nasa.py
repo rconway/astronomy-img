@@ -33,5 +33,22 @@ class NasaImageFetcher(image_fetcher.ImageFetcher):
         return json_metadata['url']
 
     def get_image(self):
+        # Today's image URL
         image_url = self.get_image_URL_from_metadata(nasa_URL)
         print(f"Image URL: {image_url}")
+
+        # Extract filename for saving
+        filename = image_url.split('/')[-1]
+        print(f"Image filename: {filename}")
+
+        # Request the image
+        response = requests.get(image_url)
+
+        # Save image from response
+        with open(filename, 'wb') as f:
+            f.write(response.content)
+
+        # Dump HTTP meta-data
+        print(response.status_code)
+        print(response.headers['content-type'])
+        print(response.encoding)
