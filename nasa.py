@@ -49,6 +49,6 @@ class NasaImageFetcher(image_fetcher.ImageFetcher):
             f.write(response.content)
 
         # Dump HTTP meta-data
-        print(response.status_code)
-        print(response.headers['content-type'])
-        print(response.encoding)
+        print(f"  status       = {response.status_code}")
+        print(f"  content-type = {response.headers['content-type']}")
+        print(f"  encoding     = {response.encoding}")
